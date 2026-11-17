@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('sections', function (Blueprint $table) {
 
-            $table->id()->autoIncrement()->unique()->nullable();
+            $table->id()->autoIncrement()->unique();
             $table->string('Nom')->nullable();
             $table->foreignId('conseil_id')->constrained()->cascadeOnDelete();
             // $table->string('Conseil')->nullable();

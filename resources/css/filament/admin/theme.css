@@ -1,0 +1,27 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+/* Indique à Tailwind v4 de compiler les classes de votre nouvelle vue */
+@source '../../../../resources/views/filament/**/*.blade.php';
+
+/* Supprime les marges et la carte centrée uniquement sur la page de connexion */
+.fi-simple-layout:has(.min-h-screen) {
+    padding: 0 !important;
+}
+
+.fi-simple-layout:has(.min-h-screen) .fi-simple-main-ctn {
+    padding: 0 !important;
+    max-width: 100% !important;
+}
+
+.fi-simple-layout:has(.min-h-screen) .fi-simple-main {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}

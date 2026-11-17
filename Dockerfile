@@ -1,13 +1,11 @@
 ﻿FROM php:8.3-apache
 
 RUN apt-get update && apt-get install -y \
-    git curl zip unzip libpng-dev libonig-dev libxml2-dev libzip-dev libicu-dev \
+    git curl zip unzip libpng-dev libonig-dev libxml2-dev libzip-dev libicu-dev nodejs npm \
     && docker-php-ext-configure intl \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN curl -fsSL https://nodesource.com | bash - \
-    && apt-get install -y nodejs
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 RUN a2enmod rewrite

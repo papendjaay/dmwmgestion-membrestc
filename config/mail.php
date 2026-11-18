@@ -50,6 +50,14 @@ return [
         ],
 
         'ses' => [
+            'mailers' => [
+                'brevo' => [
+                    'transport' => 'brevo',
+                ],
+
+                // ... gardez vos autres mailers existants (smtp, log, etc.)
+            ],
+
             'transport' => 'ses',
         ],
 

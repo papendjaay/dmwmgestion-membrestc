@@ -14,6 +14,7 @@ class MembresAgeChart extends ChartWidget
 
     protected ?string $heading = 'Effectif des Enrôlés par Tranche d\'Âge';
     protected static ?int $sort = 3;
+    protected ?string $maxHeight = '380px';
 
     protected function getFilters(): ?array
     {
@@ -43,14 +44,17 @@ class MembresAgeChart extends ChartWidget
 
         $genreFilter = $this->filter ?? 'all';
 
-        $conseil = $this->pageFilters['conseil'] ?? null;
-        $startDate = $this->pageFilters['startDate'] ?? null;
-        $endDate = $this->pageFilters['endDate'] ?? null;
+        // Filtres globaux du Dashboard
+        $conseil   = $this->filters['conseil'] ?? null;
+        $section   = $this->filters['section'] ?? null;
+        $startDate = $this->filters['startDate'] ?? null;
+        $endDate   = $this->filters['endDate'] ?? null;
 
         $query = Enrolement::query()
             ->whereNotNull('Age')
             ->when(! $isAdmin, fn($q) => $maSection ? $q->where('Section', $maSection->Nom) : $q->whereRaw('1 = 0'))
             ->when($isAdmin && $conseil, fn($q) => $q->where('Conseil', $conseil))
+            ->when($isAdmin && $section, fn($q) => $q->where('Section', $section))
             ->when($startDate, fn($q) => $q->whereDate('created_at', '>=', $startDate))
             ->when($endDate, fn($q) => $q->whereDate('created_at', '<=', $endDate))
             ->when($genreFilter !== 'all', fn($q) => $q->where('Genre', $genreFilter));
@@ -85,10 +89,10 @@ class MembresAgeChart extends ChartWidget
                     'label' => 'Effectif des Enrôlés',
                     'data' => array_values($tranches),
                     'backgroundColor' => [
-                        'rgba(59, 130, 246, 0.85)',  // Bleu (#3b82f6)
-                        'rgba(16, 185, 129, 0.85)',  // Vert (#10b981)
-                        'rgba(245, 158, 11, 0.85)',  // Orange (#f59e0b)
-                        'rgba(239, 68, 68, 0.85)',   // Rouge (#ef4444)
+                        'rgba(59, 130, 246, 0.85)',
+                        'rgba(16, 185, 129, 0.85)',
+                        'rgba(245, 158, 11, 0.85)',
+                        'rgba(239, 68, 68, 0.85)',
                     ],
                     'borderColor' => [
                         '#3b82f6',
@@ -110,6 +114,7 @@ class MembresAgeChart extends ChartWidget
     protected function getOptions(): array
     {
         return [
+            'maintainAspectRatio' => false,
             'scales' => [
                 'x' => [
                     'display' => false,

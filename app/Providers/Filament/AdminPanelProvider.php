@@ -58,7 +58,7 @@ class AdminPanelProvider extends PanelProvider
             // 2. Logo + Titre dans la barre latérale
             ->brandLogo(fn(): HtmlString => new HtmlString('
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <img src="' . asset('images/logo.png') . '" alt="Logo D.M.W.M" style="height: 2.4rem; width: auto; object-fit: contain;" />
+                    <img src="' . asset('images/logo.png') . '" alt="Logo D.M.W.M" style="height: 5rem; width: auto; object-fit: contain;" />
                     <span class="font-bold text-sm tracking-tight text-gray-900 dark:text-white whitespace-nowrap">D.M.W.M / COMITÉ TAMBA</span>
                 </div>
             '))
@@ -74,20 +74,14 @@ class AdminPanelProvider extends PanelProvider
                             to { opacity: 1; transform: translateY(0); }
                         }
 
-                        /* Fond général légèrement bleuté pour faire ressortir les cartes */
-                        .fi-body {
-                            background: linear-gradient(180deg, #EDF6FF 0%, #F8FAFC 100%) !important;
-                        }
-                        .dark .fi-body {
-                            background: linear-gradient(180deg, #0B1120 0%, #0F172A 100%) !important;
-                        }
-
-                        /* Exploitation maximale de tout l\'espace disponible */
-                        .fi-main {
-                            max-width: 100% !important;
-                            padding-left: 1rem !important;
-                            padding-right: 1rem !important;
-                            animation: pageFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                        h1, h2, h3, h4,
+                        .fi-header-heading,
+                        .fi-section-header-heading,
+                        .fi-modal-heading,
+                        .fi-wi-stats-overview-stat-value,
+                        .fi-sidebar-header span {
+                            font-family: "Poppins", sans-serif !important;
+                            letter-spacing: -0.01em;
                         }
 
                         /* Réduction des espacements verticaux pour afficher plus d\'éléments sans défiler */
@@ -253,17 +247,62 @@ class AdminPanelProvider extends PanelProvider
     padding-top: 0.45rem !important;
     padding-bottom: 0.45rem !important;
 }
+    /* Compactage du tableau sur le Dashboard */
+.fi-wi-table .fi-ta-header-ctn {
+    padding: 0.45rem 1rem !important;
+}
+
+.fi-wi-table .fi-ta-cell,
+.fi-wi-table .fi-ta-header-cell {
+    padding-top: 0.35rem !important;
+    padding-bottom: 0.35rem !important;
+}
+    /* Alignement parfait des 3 graphiques sur la même ligne */
+.fi-wi-chart {
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.fi-wi-chart .fi-section {
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+}
+
+
+.fi-wi-chart .fi-section-header {
+    min-height: 4.5rem !important;
+    align-items: flex-start !important;
+}
+
+/* Uniformise la hauteur de la zone du canvas Chart.js */
+.fi-wi-chart .fi-section-content-ctn,
+.fi-wi-chart .fi-section-content {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+}
+
+.fi-wi-chart canvas {
+    height: 320px !important;
+    max-height: 320px !important;
+}
+
+
                     </style>
                 '),
             )
 
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
+            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->pages([
                 // Vide pour éviter le doublon avec App\Filament\Pages\Dashboard
             ])
             ->sidebarWidth('16rem')
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->plugins($plugins)
             ->maxContentWidth('full')
             ->middleware([
@@ -278,6 +317,7 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->sidebarCollapsibleOnDesktop()
+            ->globalSearch(false)
             ->authMiddleware([
                 Authenticate::class,
             ]);

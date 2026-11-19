@@ -18,24 +18,28 @@ class StatsOverview extends BaseWidget
 
     protected static ?int $sort = 1;
 
+    protected int | string | array $columnSpan = 'full';
+
     protected function getStats(): array
     {
         $user = Auth::user();
         $isAdmin = $user instanceof User && $user->hasRole('super_admin');
         $maSection = ! $isAdmin && $user instanceof User ? $user->getMaSection() : null;
 
-        $conseil = $isAdmin ? ($this->pageFilters['conseil'] ?? null) : $maSection?->conseil?->Nom;
-        $startDate = $this->pageFilters['startDate'] ?? null;
-        $endDate = $this->pageFilters['endDate'] ?? null;
+        // Récupération des filtres globaux du Dashboard
+        $conseil   = $isAdmin ? ($this->filters['conseil'] ?? null) : $maSection?->conseil?->Nom;
+        $section   = $isAdmin ? ($this->filters['section'] ?? null) : $maSection?->Nom;
+        $startDate = $this->filters['startDate'] ?? null;
+        $endDate   = $this->filters['endDate'] ?? null;
 
         $enrolementsQuery = Enrolement::query()
             ->when(! $isAdmin, fn($q) => $maSection ? $q->where('Section', $maSection->Nom) : $q->whereRaw('1 = 0'))
             ->when($isAdmin && $conseil, fn($q) => $q->where('Conseil', $conseil))
+            ->when($isAdmin && $section, fn($q) => $q->where('Section', $section))
             ->when($startDate, fn($q) => $q->whereDate('created_at', '>=', $startDate))
             ->when($endDate, fn($q) => $q->whereDate('created_at', '<=', $endDate));
 
-        // Génère une courbe de tendance réelle sur les 7 derniers jours
-        $tendanceEnrolements = $this->getEnrolementsTrend($isAdmin, $maSection?->Nom, $conseil);
+        $tendanceEnrolements = $this->getEnrolementsTrend($isAdmin, $section, $conseil);
 
         // =========================================================================
         // VUE UTILISATEUR DE SECTION
@@ -70,10 +74,14 @@ class StatsOverview extends BaseWidget
         }
 
         // =========================================================================
-        // VUE SUPER ADMINISTRATEUR
+        // VUE SUPER ADMINISTRATEUR (réagit aussi aux filtres Conseil / Section)
         // =========================================================================
-        $sectionsActives = Section::where('status', true)->count();
-        $totalSections = Section::count();
+        $sectionsQuery = Section::query()
+            ->when($conseil, fn($q) => $q->whereHas('conseil', fn($q2) => $q2->where('Nom', $conseil)))
+            ->when($section, fn($q) => $q->where('Nom', $section));
+
+        $sectionsActives = (clone $sectionsQuery)->where('status', true)->count();
+        $totalSections = (clone $sectionsQuery)->count();
 
         return [
             Stat::make('CONSEILS', $conseil ? 1 : Conseil::count())
@@ -85,7 +93,7 @@ class StatsOverview extends BaseWidget
                 ]),
 
             Stat::make('SECTIONS', "$sectionsActives / $totalSections")
-                ->description('Sections actives sur le territoire')
+                ->description($section ? "Section : $section" : 'Sections actives')
                 ->descriptionIcon('heroicon-m-check-badge')
                 ->color('success')
                 ->extraAttributes([
@@ -103,14 +111,12 @@ class StatsOverview extends BaseWidget
             Stat::make('ENRÔLEMENTS', number_format((clone $enrolementsQuery)->count(), 0, ',', ' '))
                 ->description('Dossiers complétés')
                 ->descriptionIcon('heroicon-m-clipboard-document-check')
-                // ->chart($tendanceEnrolements)
                 ->color('warning')
                 ->extraAttributes([
                     'class' => 'border-t-4 border-t-amber-500 shadow-sm hover:shadow-md transition-shadow',
                 ]),
         ];
     }
-    protected int | string | array $columnSpan = 'full';
 
     /**
      * Calcule l'évolution quotidienne des enrôlements sur les 7 derniers jours
@@ -123,6 +129,7 @@ class StatsOverview extends BaseWidget
             ->selectRaw('DATE(created_at) as date, COUNT(*) as total')
             ->when(! $isAdmin, fn($q) => $sectionNom ? $q->where('Section', $sectionNom) : $q->whereRaw('1 = 0'))
             ->when($isAdmin && $conseilNom, fn($q) => $q->where('Conseil', $conseilNom))
+            ->when($isAdmin && $sectionNom, fn($q) => $q->where('Section', $sectionNom))
             ->where('created_at', '>=', $start)
             ->groupByRaw('DATE(created_at)')
             ->pluck('total', 'date')

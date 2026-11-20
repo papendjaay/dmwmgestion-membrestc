@@ -50,13 +50,14 @@ class ConseilInfolist
                                     ->placeholder('Non renseigné')
                                     ->weight('bold'),
 
-                                TextEntry::make('tel_pf1')
+                                TextEntry::make('TEL_PF1')
                                     ->label('TÉLÉPHONE PF1')
                                     ->url(function ($state): ?string {
                                         if (blank($state)) {
                                             return null;
                                         }
                                         $numero = preg_replace('/\s+/', '', $state);
+
                                         return "tel:+221{$numero}";
                                     })
                                     ->icon(Heroicon::OutlinedPhone)
@@ -71,13 +72,14 @@ class ConseilInfolist
                                     ->placeholder('Non renseigné')
                                     ->weight('bold'),
 
-                                TextEntry::make('tel_pf2')
+                                TextEntry::make('TEL_PF2')
                                     ->label('TÉLÉPHONE PF2')
                                     ->url(function ($state): ?string {
                                         if (blank($state)) {
                                             return null;
                                         }
                                         $numero = preg_replace('/\s+/', '', $state);
+
                                         return "tel:+221{$numero}";
                                     })
                                     ->icon(Heroicon::OutlinedPhone)
@@ -92,13 +94,14 @@ class ConseilInfolist
                                     ->placeholder('Non renseigné')
                                     ->weight('bold'),
 
-                                TextEntry::make('tel_pf3')
+                                TextEntry::make('TEL_PF3')
                                     ->label('TÉLÉPHONE PF3')
                                     ->url(function ($state): ?string {
                                         if (blank($state)) {
                                             return null;
                                         }
                                         $numero = preg_replace('/\s+/', '', $state);
+
                                         return "tel:+221{$numero}";
                                     })
                                     ->icon(Heroicon::OutlinedPhone)

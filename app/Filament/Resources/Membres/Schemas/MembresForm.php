@@ -10,12 +10,19 @@ use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Auth;
 
 class MembresForm
 {
     public static function configure(Schema $schema): Schema
     {
         return $schema
+            ->columns([
+                'default' => 1, // Smartphone (1 colonne pleine largeur)
+                'sm' => 2,      // Grand téléphone / petite tablette (2 colonnes)
+                'lg' => 3,      // Ordinateur portable (3 colonnes)
+                '2xl' => 4,     // Grand écran (4 colonnes)
+            ])
             ->components([
                 Wizard::make([
                     // PREMIÈRE ÉTAPE (Page 1) : Les 10 premières informations
@@ -174,6 +181,33 @@ class MembresForm
                                 ->offIcon('heroicon-m-x-circle')
                                 ->default(true)
                                 ->required(),
+                            TextInput::make('Conseil')
+                                ->default(function () {
+                                    $user = Auth::user();
+
+                                    return $user && method_exists($user, 'getMaSection')
+                                        ? $user->getMaSection()?->conseil?->Nom
+                                        : null;
+                                })
+                                ->disabled(fn() => ! (Auth::user() && call_user_func([Auth::user(), 'hasRole'], 'super_admin')))
+                                ->dehydrated(), // Permet d'envoyer la valeur par défaut tout en bloquant la modification
+
+                            TextInput::make('Section')
+                                ->default(function () {
+                                    $user = Auth::user();
+
+                                    return $user && method_exists($user, 'getMaSection')
+                                        ? $user->getMaSection()?->Nom
+                                        : null;
+                                })
+                                ->disabled(fn() => ! (Auth::user() && call_user_func([Auth::user(), 'hasRole'], 'super_admin')))
+                                ->dehydrated(),
+
+                            TextInput::make('Cree_par')
+                                ->label('Créé par')
+                                ->default(fn() => Auth::user()?->name)
+                                ->disabled() // Verrouillé pour tout le monde
+                                ->dehydrated(),
                         ])
                         ->columns(2)
                 ])

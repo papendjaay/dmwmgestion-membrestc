@@ -27,13 +27,15 @@ class AdminPanelProvider extends PanelProvider
             $plugins[] = \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make();
         }
 
-        return $panel
+        $panel = $panel
             ->default()
             ->id('admin')
             ->path('admin')
             ->login(CustomLogin::class)
             ->spa()
+            ->passwordReset() // <-- Permet aux utilisateurs Gmail de réinitialiser leur mot de passe
             ->databaseNotifications()
+            ->passwordReset() // Permet aux Points Focaux de définir leur propre mot de passe par email
             ->databaseNotificationsPolling('30s')
             ->colors([
                 'primary' => [
@@ -112,7 +114,7 @@ class AdminPanelProvider extends PanelProvider
 
                         .fi-sidebar-item a:hover {
                             transform: translateX(4px);
-                            background-color: rgba(0, 156, 254, 0.12) !important;
+                            background-color: rgba(243, 128, 20, 0.37) !important;
                         }
 
                         .fi-sidebar-item-active a {
@@ -290,10 +292,33 @@ class AdminPanelProvider extends PanelProvider
     height: 320px !important;
     max-height: 320px !important;
 }
+                        /* Adaptation automatique sur smartphones (< 640px) */
+                        @media (max-width: 640px) {
+                            /* Évite que la bannière de bienvenue ne déborde horizontalement */
+                            .fi-wi-widget .flex.items-center.justify-between {
+                                flex-direction: column !important;
+                                align-items: flex-start !important;
+                                gap: 0.75rem !important;
+                            }
 
+                            /* Réduit les marges latérales pour gagner de la place */
+                            .fi-main {
+                                padding-left: 0.75rem !important;
+                                padding-right: 0.75rem !important;
+                            }
 
+                         
+                            .fi-header-actions {
+                                width: 100%;
+                                justify-content: stretch !important;
+                            }
+
+                            .fi-header-actions > * {
+                                flex: 1 1 auto;
+                            }
+                        }
                     </style>
-                '),
+                ')
             )
 
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
@@ -317,6 +342,19 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->sidebarCollapsibleOnDesktop()
+            ->profile(); // Obligatoire pour que l'utilisateur puisse gérer sa 2FA
+
+        $appAuthentication = 'Filament\\Auth\\MultiFactor\\AppAuthentication';
+        if (class_exists($appAuthentication)) {
+            $panel->multiFactorAuthentication([
+                $appAuthentication::make()
+                    ->recoverable()
+                    ->brandName('Comité Tamba'),
+            ], isRequired: true); // Force la 2FA pour tous les comptes
+        }
+
+        return $panel
+            // ... gardez le reste de votre configuration (colors, resources, pages, middleware...) ...
             ->globalSearch(false)
             ->authMiddleware([
                 Authenticate::class,

@@ -27,7 +27,10 @@ class Dashboard extends BaseDashboard
             'xl' => 3,
         ];
     }
-
+    public function getHeading(): string
+    {
+        return '';
+    }
     public function filtersForm(Schema $schema): Schema
     {
         $user = Auth::user();

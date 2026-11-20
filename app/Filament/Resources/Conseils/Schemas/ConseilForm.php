@@ -13,6 +13,12 @@ class ConseilForm
     public static function configure(Schema $schema): Schema
     {
         return $schema
+            ->columns([
+                'default' => 1, // Smartphone (1 colonne pleine largeur)
+                'sm' => 2,      // Grand téléphone / petite tablette (2 colonnes)
+                'lg' => 3,      // Ordinateur portable (3 colonnes)
+                '2xl' => 4,     // Grand écran (4 colonnes)
+            ])
             ->components([
                 // Bloc 1 : Identification du Conseil
                 Section::make('Informations du Conseil')
@@ -117,7 +123,6 @@ class ConseilForm
                                     ->required(),
                             ]),
                     ]),
-            ])
-            ->columns(1);
+            ]);
     }
 }

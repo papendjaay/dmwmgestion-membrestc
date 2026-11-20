@@ -74,6 +74,10 @@ class SectionForm
                                         'regex' => 'Format invalide (ex. : 77 123 45 67).',
                                     ])
                                     ->maxLength(30),
+                                TextInput::make('EMAIL_PF1')
+                                    ->label('Email PF1 (Gmail)')
+                                    ->email()
+                                    ->placeholder('exemple@gmail.com'),
 
                                 // --- POINT FOCAL 2 ---
                                 TextInput::make('PF2')
@@ -93,7 +97,10 @@ class SectionForm
                                         'regex' => 'Format invalide (ex. : 77 123 45 67).',
                                     ])
                                     ->maxLength(30),
-
+                                TextInput::make('EMAIL_PF2')
+                                    ->label('Email PF2 (Gmail)')
+                                    ->email()
+                                    ->placeholder('exemple@gmail.com'),
                                 // --- POINT FOCAL 3 ---
                                 TextInput::make('PF3')
                                     ->label('Point Focal 3 (Nom complet)')
@@ -112,6 +119,10 @@ class SectionForm
                                         'regex' => 'Format invalide (ex. : 77 123 45 67).',
                                     ])
                                     ->maxLength(30),
+                                TextInput::make('EMAIL_PF3')
+                                    ->label('Email PF3 (Gmail)')
+                                    ->email()
+                                    ->placeholder('exemple@gmail.com'),
                             ]),
                     ]),
             ])

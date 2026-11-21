@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('conseils', function (Blueprint $table) {
-            $table->string('tel_pf3', 30)->nullable()->after('PF3');
-        });
+        if (!Schema::hasColumn('conseils', 'tel_pf3')) {
+            Schema::table('conseils', function (Blueprint $table) {
+                $table->string('tel_pf3', 30)->nullable()->after('PF3');
+            });
+        }
     }
 
     /**
@@ -21,8 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('conseils', function (Blueprint $table) {
-            $table->dropColumn('tel_pf3');
-        });
+        if (Schema::hasColumn('conseils', 'tel_pf3')) {
+            Schema::table('conseils', function (Blueprint $table) {
+                $table->dropColumn('tel_pf3');
+            });
+        }
     }
 };

@@ -9,6 +9,8 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Auth\MultiFactor\App\AppAuthentication;
+use Filament\Auth\MultiFactor\Email\EmailAuthentication;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -31,6 +33,19 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            // 1. Utilise uniquement votre classe CustomLogin (le mot de passe s'y configure)
+            ->login(CustomLogin::class)
+            // 2. Lien "Mot de passe oublié ?" (un seul appel suffit)
+            ->passwordReset()
+            // 3. Page profil pour que les utilisateurs activent la 2FA
+            ->profile()
+            // 4. Double authentification native Filament 5
+            ->multiFactorAuthentication([
+                AppAuthentication::make()
+                    ->brandName('D.M.W.M / COMITÉ TAMBA') // Nom affiché dans Google Authenticator
+                    ->recoverable(), // Génère des codes de secours
+                EmailAuthentication::make(),
+            ])
             ->login(CustomLogin::class)
             ->spa()
             ->maxContentWidth('full') // <-- Étend toutes les pages et formulaires sur toute la largeur

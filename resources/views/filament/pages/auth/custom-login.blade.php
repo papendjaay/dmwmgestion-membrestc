@@ -271,6 +271,21 @@
                 <p style="margin-top: 0.6rem; font-size: 0.95rem; color: #94a3b8; line-height: 1.55;">
                     Saisissez vos identifiants pour accéder à votre espace sécurisé.
                 </p>
+                <div style="margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.85rem; font-weight: 700; letter-spacing: -0.025em; color: #ffffff; margin: 0;">
+                        Connexion
+                    </h2>
+                    <p style="margin-top: 0.6rem; font-size: 0.95rem; color: #94a3b8; line-height: 1.55;">
+                        Saisissez votre adresse e-mail pour recevoir votre lien d'accès.
+                    </p>
+                </div>
+
+                <form wire:submit="authenticate" style="display: flex; flex-direction: column; gap: 1.75rem;">
+                    {{ $this->form }}
+
+                    <button type="submit" wire:loading.attr="disabled" class="dmww-submit-btn">
+                        <span wire:loading.remove wire:target="authenticate">Se connecter</span>
+                    </button>
             </div>
 
             <form wire:submit="authenticate" style="display: flex; flex-direction: column; gap: 1.75rem;">

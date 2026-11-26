@@ -3,14 +3,16 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\CustomLogin;
+use Filament\Pages\Dashboard;
+use App\Filament\Pages\Auth\CustomRequestPasswordReset;
+use Filament\Auth\MultiFactor\App\AppAuthentication;
+use Filament\Auth\MultiFactor\Email\EmailAuthentication;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Filament\Auth\MultiFactor\App\AppAuthentication;
-use Filament\Auth\MultiFactor\Email\EmailAuthentication;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -29,33 +31,17 @@ class AdminPanelProvider extends PanelProvider
             $plugins[] = \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make();
         }
 
-        $panel = $panel
+        return $panel
             ->default()
             ->id('admin')
-            ->path('admin')
-            // 1. Utilise uniquement votre classe CustomLogin (le mot de passe s'y configure)
+            ->path('')
             ->login(CustomLogin::class)
-            // 2. Lien "Mot de passe oublié ?" (un seul appel suffit)
             ->passwordReset()
-            // 3. Page profil pour que les utilisateurs activent la 2FA
             ->profile()
-            // 4. Double authentification native Filament 5
-            ->multiFactorAuthentication([
-                AppAuthentication::make()
-                    ->brandName('D.M.W.M / COMITÉ TAMBA') // Nom affiché dans Google Authenticator
-                    ->recoverable(), // Génère des codes de secours
-                EmailAuthentication::make(),
-            ])
-            ->login(CustomLogin::class)
             ->spa()
-            ->maxContentWidth('full') // <-- Étend toutes les pages et formulaires sur toute la largeur
-            ->sidebarCollapsibleOnDesktop()   // <-- Permet d'ouvrir/fermer proprement la barre latérale
-            ->passwordReset()
+            ->maxContentWidth('full')
+            ->sidebarCollapsibleOnDesktop()
             ->databaseNotifications()
-            ->databaseNotificationsPolling('30s')
-            ->passwordReset() // <-- Permet aux utilisateurs Gmail de réinitialiser leur mot de passe
-            ->databaseNotifications()
-            ->passwordReset() // Permet aux Points Focaux de définir leur propre mot de passe par email
             ->databaseNotificationsPolling('30s')
             ->colors([
                 'primary' => [
@@ -72,21 +58,15 @@ class AdminPanelProvider extends PanelProvider
                     950 => '#042c4f',
                 ],
             ])
-
-            // 1. Titre officiel et Favicon
             ->brandName('D.M.W.M/COMITÉ TAMBA')
             ->favicon(asset('images/logo.png'))
-
-            // 2. Logo + Titre dans la barre latérale
             ->brandLogo(fn(): HtmlString => new HtmlString('
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <img src="' . asset('images/logo.png') . '" alt="Logo D.M.W.M" style="height: 5rem; width: auto; object-fit: contain;" />
+                    <img src="' . asset('images/logo.png') . '" alt="Logo D.M.W.M" style="height: 4rem; width: auto; object-fit: contain;" />
                     <span class="font-bold text-sm tracking-tight text-gray-900 dark:text-white whitespace-nowrap">D.M.W.M / COMITÉ TAMBA</span>
                 </div>
             '))
             ->brandLogoHeight('3rem')
-
-            // 3. Thème global coloré, compact, pleine largeur et animé
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn(): HtmlString => new HtmlString('
@@ -106,7 +86,6 @@ class AdminPanelProvider extends PanelProvider
                             letter-spacing: -0.01em;
                         }
 
-                        /* Réduction des espacements verticaux pour afficher plus d\'éléments sans défiler */
                         .fi-page-header-main-ctn {
                             padding-top: 0.65rem !important;
                             padding-bottom: 0.45rem !important;
@@ -116,13 +95,11 @@ class AdminPanelProvider extends PanelProvider
                             gap: 0.85rem !important;
                         }
 
-                        /* Barre supérieure (Topbar) soulignée */
                         .fi-topbar nav {
                             border-bottom: 2px solid rgba(0, 156, 254, 0.2) !important;
                             backdrop-filter: blur(8px);
                         }
 
-                        /* Animation et coloration du menu latéral (Sidebar) */
                         .fi-sidebar {
                             border-right: 1px solid rgba(0, 156, 254, 0.16) !important;
                         }
@@ -149,7 +126,6 @@ class AdminPanelProvider extends PanelProvider
                             color: #ffffff !important;
                         }
 
-                        /* Coloration individuelle et élévation des 4 cartes statistiques */
                         .fi-wi-stats-overview-stat {
                             border-radius: 14px !important;
                             padding: 1.1rem 1.1rem !important;
@@ -175,181 +151,39 @@ class AdminPanelProvider extends PanelProvider
                             background: linear-gradient(145deg, #ffffff 55%, rgba(99, 102, 241, 0.1) 100%) !important;
                         }
                         .fi-wi-stats-overview-stat:nth-child(4) {
-                            border-top-color: #fad900 !important;
+                            border-top-color: #f59e0b !important;
                             background: linear-gradient(145deg, #ffffff 55%, rgba(245, 158, 11, 0.1) 100%) !important;
                         }
+                            /* Mode clair */
+.fi-wi-stats-overview-stat:nth-child(1) { border-top-color: #006fb5 !important; }
+.fi-wi-stats-overview-stat:nth-child(2) { border-top-color: #00885a !important; }
+.fi-wi-stats-overview-stat:nth-child(3) { border-top-color: #ff6600 !important; }
+.fi-wi-stats-overview-stat:nth-child(4) { border-top-color: #f59e0b !important; }
 
-                        .dark .fi-wi-stats-overview-stat:nth-child(1),
-                        .dark .fi-wi-stats-overview-stat:nth-child(2),
-                        .dark .fi-wi-stats-overview-stat:nth-child(3),
-                        .dark .fi-wi-stats-overview-stat:nth-child(4) {
-                            background: #162032 !important;
-                        }
-
-                        /* Sections et Graphiques */
-                        .fi-section {
-                            border-radius: 14px !important;
-                            box-shadow: 0 4px 16px -4px rgba(15, 23, 42, 0.06) !important;
-                            transition: transform 0.30s ease, box-shadow 0.30s ease !important;
-                        }
-
-                        .fi-section:hover {
-                            box-shadow: 0 10px 25px -5px rgba(0, 156, 254, 0.15) !important;
-                        }
-
-                        /* Boutons interactifs */
-                        .fi-btn {
-                            border-radius: 10px !important;
-                            transition: transform 0.5s ease, box-shadow 0.5s ease !important;
-                        }
-
-                        .fi-btn:hover {
-                            transform: translateY(-1.5px);
-                            box-shadow: 0 6px 14px -3px rgba(0, 156, 254, 0.28) !important;
-                        }
-
-                        /* Champs de formulaire */
-                        .fi-input-wrp {
-                            border-radius: 10px !important;
-                            transition: box-shadow 0.25s ease, border-color 0.25s ease !important;
-                        }
-
-                        .fi-input-wrp:focus-within {
-                            box-shadow: 0 0 0 3px rgba(0, 156, 254, 0.22) !important;
-                        }
-
-                        /* Modales avec ouverture douce */
-                        .fi-modal-window {
-                            border-radius: 16px !important;
-                            animation: pageFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-                        }
-                            .fi-wi-chart .fi-section-content {
-    padding-top: 0.5rem !important;
-    padding-bottom: 0.5rem !important;
+/* Adaptation automatique au mode sombre (.dark) */
+.dark .fi-wi-stats-overview-stat:nth-child(1) {
+    background: linear-gradient(145deg, rgba(15, 23, 42, 0.9) 55%, rgba(0, 156, 254, 0.18) 100%) !important;
+}
+.dark .fi-wi-stats-overview-stat:nth-child(2) {
+    background: linear-gradient(145deg, rgba(15, 23, 42, 0.9) 55%, rgba(16, 185, 129, 0.18) 100%) !important;
+}
+.dark .fi-wi-stats-overview-stat:nth-child(3) {
+    background: linear-gradient(145deg, rgba(15, 23, 42, 0.9) 55%, rgba(255, 102, 0, 0.18) 100%) !important;
+}
+.dark .fi-wi-stats-overview-stat:nth-child(4) {
+    background: linear-gradient(145deg, rgba(15, 23, 42, 0.9) 55%, rgba(245, 158, 11, 0.18) 100%) !important;
 }
 
-.fi-wi-chart canvas {
-    max-height: 215px !important;
-}
-    .welcome-banner-card {
-    padding: 12px 18px !important;
-}
-    .fi-wi-table thead {
-    background-color: #009CFE !important;
-}
-
-.fi-wi-table thead th,
-.fi-wi-table thead th * {
-    color: #000000 !important;
-    font-weight: 700 !important;
-    text-transform: uppercase !important;
-    font-size: 0.75rem !important;
-}
-
-.fi-wi-table tbody tr:nth-child(even) {
-    background-color: #F3F3F3 !important;
-}
-
-.dark .fi-wi-table tbody tr:nth-child(even) {
-    background-color: #1E293B !important;
-}
-
-.fi-wi-table tbody tr:hover {
-    background-color: #E0E0E0 !important;
-}
-
-.dark .fi-wi-table tbody tr:hover {
-    background-color: #334155 !important;
-}
-
-.fi-wi-table tbody td {
-    font-weight: 600 !important;
-    font-size: 0.75rem !important;
-    text-transform: uppercase !important;
-    padding-top: 0.45rem !important;
-    padding-bottom: 0.45rem !important;
-}
-    /* Compactage du tableau sur le Dashboard */
-.fi-wi-table .fi-ta-header-ctn {
-    padding: 0.45rem 1rem !important;
-}
-
-.fi-wi-table .fi-ta-cell,
-.fi-wi-table .fi-ta-header-cell {
-    padding-top: 0.35rem !important;
-    padding-bottom: 0.35rem !important;
-}
-    /* Alignement parfait des 3 graphiques sur la même ligne */
-.fi-wi-chart {
-    height: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
-}
-
-.fi-wi-chart .fi-section {
-    height: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
-}
-
-
-.fi-wi-chart .fi-section-header {
-    min-height: 4.5rem !important;
-    align-items: flex-start !important;
-}
-
-/* Uniformise la hauteur de la zone du canvas Chart.js */
-.fi-wi-chart .fi-section-content-ctn,
-.fi-wi-chart .fi-section-content {
-    flex: 1 1 auto !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-}
-
-.fi-wi-chart canvas {
-    height: 320px !important;
-    max-height: 320px !important;
-}
-                        /* Adaptation automatique sur smartphones (< 640px) */
-                        @media (max-width: 640px) {
-                            /* Évite que la bannière de bienvenue ne déborde horizontalement */
-                            .fi-wi-widget .flex.items-center.justify-between {
-                                flex-direction: column !important;
-                                align-items: flex-start !important;
-                                gap: 0.75rem !important;
-                            }
-
-                            /* Réduit les marges latérales pour gagner de la place */
-                            .fi-main {
-                                padding-left: 0.75rem !important;
-                                padding-right: 0.75rem !important;
-                            }
-
-                         
-                            .fi-header-actions {
-                                width: 100%;
-                                justify-content: stretch !important;
-                            }
-
-                            .fi-header-actions > * {
-                                flex: 1 1 auto;
-                            }
-                        }
                     </style>
                 ')
             )
-
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
+            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
-                // Vide pour éviter le doublon avec App\Filament\Pages\Dashboard
+                // Dashboard::class,
             ])
-            ->sidebarWidth('16rem')
+            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->plugins($plugins)
-            ->maxContentWidth('full')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -361,21 +195,6 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
-            ->sidebarCollapsibleOnDesktop()
-            ->profile(); // Obligatoire pour que l'utilisateur puisse gérer sa 2FA
-
-        $appAuthentication = 'Filament\\Auth\\MultiFactor\\AppAuthentication';
-        if (class_exists($appAuthentication)) {
-            $panel->multiFactorAuthentication([
-                $appAuthentication::make()
-                    ->recoverable()
-                    ->brandName('Comité Tamba'),
-            ], isRequired: true); // Force la 2FA pour tous les comptes
-        }
-
-        return $panel
-            // ... gardez le reste de votre configuration (colors, resources, pages, middleware...) ...
-            ->globalSearch(false)
             ->authMiddleware([
                 Authenticate::class,
             ]);

@@ -6,8 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-// Dès qu'on ouvre http://localhost:8000/, on arrive sur la page de connexion
-Route::redirect('/', '/admin/login');
+// ❌ SUPPRIMÉ : Route::redirect('/', '/admin/login');
+// Filament gère directement "/" :
+// - Non connecté -> redirige automatiquement vers "/login" (CustomLogin)
+// - Connecté -> affiche directement votre tableau de bord
 
 // Route sécurisée pour la connexion par lien d'accès (Magic Link)
 Route::get('/auth/magic-login/{user}', function (Request $request, User $user) {

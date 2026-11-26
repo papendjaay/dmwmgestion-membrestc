@@ -25,6 +25,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
         'email',
         'password',
         'section_id',
+        'conseil_id',
         'is_active',
     ];
 
@@ -49,6 +50,11 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
         return $this->belongsTo(Section::class);
     }
 
+    public function conseil(): BelongsTo
+    {
+        return $this->belongsTo(Conseil::class);
+    }
+
     public function getMaSection(): ?Section
     {
         if ($this->section_id) {
@@ -70,12 +76,25 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             ->first();
     }
 
+    public function getMonConseil(): ?Conseil
+    {
+        if ($this->conseil_id) {
+            return Conseil::find($this->conseil_id);
+        }
+
+        return Conseil::where('email_pf1', $this->email)
+            ->orWhere('email_pf2', $this->email)
+            ->orWhere('email_pf3', $this->email)
+            ->orWhereRaw('LOWER(TRIM(pf1)) = ?', [mb_strtolower(trim($this->name))])
+            ->orWhereRaw('LOWER(TRIM(pf2)) = ?', [mb_strtolower(trim($this->name))])
+            ->orWhereRaw('LOWER(TRIM(pf3)) = ?', [mb_strtolower(trim($this->name))])
+            ->first();
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         $estActif = $this->is_active ?? true;
-        $estActif = $this->is_active ?? true;
 
-        return $estActif && $this->hasAnyRole(['super_admin', 'point_focal']);
-        return $estActif && $this->hasAnyRole(['Super Admin', 'Point Focal']);
+        return $estActif && $this->hasAnyRole(['super_admin', 'point_focal', 'point_focal_conseil']);
     }
 }

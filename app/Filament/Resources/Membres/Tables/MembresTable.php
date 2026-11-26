@@ -296,91 +296,34 @@ class MembresTable
                     ->alignment(Alignment::Center),
             ])
             ->filters([
-                // --- FILTRES RÉSERVÉS UNIQUEMENT AU SUPER ADMIN ---
                 SelectFilter::make('Conseil')
-                    ->label('Filtrer par Conseil')
-                    ->options(fn() => Conseil::query()->pluck('Nom', 'Nom')->toArray())
+                    ->label('Conseil')
+                    ->options(fn(): array => Conseil::query()->pluck('Nom', 'Nom')->toArray())
                     ->searchable()
-                    ->visible(fn(): bool => ($user = Auth::user()) !== null && is_callable([$user, 'hasRole']) && call_user_func([$user, 'hasRole'], 'super_admin')),
+                    ->preload(),
 
                 SelectFilter::make('Section')
-                    ->label('Filtrer par Section')
-                    ->options(fn() => Section::query()->pluck('Nom', 'Nom')->toArray())
+                    ->label('Section')
+                    ->options(fn(): array => Section::query()->pluck('Nom', 'Nom')->toArray())
                     ->searchable()
-                    ->visible(fn(): bool => ($user = Auth::user()) !== null && is_callable([$user, 'hasRole']) && call_user_func([$user, 'hasRole'], 'super_admin')),
+                    ->preload(),
 
-                // --- FILTRES DISPONIBLES POUR TOUS LES RÔLES ---
                 SelectFilter::make('Genre')
-                    ->label('Filtrer par Genre')
+                    ->label('Genre')
                     ->options([
                         'Masculin' => 'Masculin',
-                        'Féminin' => 'Féminin',
+                        'Féminin'  => 'Féminin',
                     ]),
 
-                SelectFilter::make('tranche_age')
-                    ->label('Filtrer par Tranche d\'âge')
+                SelectFilter::make('Statut')
+                    ->label('Statut')
                     ->options([
-                        'moins_18' => 'Moins de 18 ans',
-                        '18_35' => '18 à 35 ans (Jeunes)',
-                        'plus_35' => 'Plus de 35 ans',
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return match ($data['value'] ?? null) {
-                            'moins_18' => $query->where('Age', '<', 18),
-                            '18_35' => $query->whereBetween('Age', [18, 35]),
-                            'plus_35' => $query->where('Age', '>', 35),
-                            default => $query,
-                        };
-                    }),
-
-                SelectFilter::make('Niveau_Etude')
-                    ->label('Filtrer par Niveau d\'étude')
-                    ->options([
-                        'Aucun' => 'Aucun',
-                        'Primaire' => 'Primaire',
-                        'Secondaire' => 'Secondaire',
-                        'Baccalauréat' => 'Baccalauréat',
-                        'Licence / Bac+3' => 'Licence / Bac+3',
-                        'Master / Bac+5' => 'Master / Bac+5',
-                        'Doctorat' => 'Doctorat',
-                        'Formation Professionnelle' => 'Formation Professionnelle',
-                        'École Coranique / Arabe' => 'École Coranique / Arabe',
-                    ])
-                    ->searchable(),
-
-                SelectFilter::make('Profession')
-                    ->label('Filtrer par Profession')
-                    ->options(
-                        fn(): array => DB::table('membres')
-                            ->whereNotNull('Profession')
-                            ->where('Profession', '!=', '')
-                            ->distinct()
-                            ->pluck('Profession', 'Profession')
-                            ->toArray()
-                    )
-                    ->searchable(),
-
-                SelectFilter::make('Type_piece_identite')
-                    ->label('Filtrer par Pièce d\'identité')
-                    ->options([
-                        'Pas encore de pièce',
-                        'Carte Nationale d\'Identité (CNI)',
-                        'Passeport',
-                        'Autre',
-                    ]),
-
-                SelectFilter::make('Lien_parental')
-                    ->label('Filtrer par Lien parental')
-                    ->options([
-                        'Père',
-                        'Mère',
-                        'Frère',
-                        'Sœur',
-                        'Conjoint(e)',
-                        'Tuteur',
-                        'Autre',
+                        'Enrôlé'  => 'Enrôlé',
+                        'Actif'   => 'Actif',
+                        'Inactif' => 'Inactif',
                     ]),
             ])
+
             ->recordActions([
                 ActionGroup::make([
                     ViewAction::make(),

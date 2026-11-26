@@ -8,9 +8,9 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateSection extends CreateRecord
 {
     protected static string $resource = SectionResource::class;
-    protected static bool $canCreateAnother = false;
-    protected function getRedirectUrl(): string
+
+    protected function getFormActions(): array
     {
-        return $this->getResource()::getUrl('index');
+        return [];
     }
 }

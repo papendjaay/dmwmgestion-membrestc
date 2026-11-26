@@ -11,10 +11,10 @@ use Illuminate\Auth\Access\HandlesAuthorization;
 class ConseilPolicy
 {
     use HandlesAuthorization;
-    
+
     public function viewAny(AuthUser $authUser): bool
     {
-        return $authUser->can('ViewAny:Conseil');
+        return $authUser->hasRole(['super_admin', 'point_focal_conseil']);
     }
 
     public function view(AuthUser $authUser, Conseil $conseil): bool
@@ -24,7 +24,7 @@ class ConseilPolicy
 
     public function create(AuthUser $authUser): bool
     {
-        return $authUser->can('Create:Conseil');
+        return $authUser->hasRole('super_admin');
     }
 
     public function update(AuthUser $authUser, Conseil $conseil): bool
@@ -34,7 +34,7 @@ class ConseilPolicy
 
     public function delete(AuthUser $authUser, Conseil $conseil): bool
     {
-        return $authUser->can('Delete:Conseil');
+        return $authUser->hasRole('super_admin');
     }
 
     public function deleteAny(AuthUser $authUser): bool
@@ -56,7 +56,6 @@ class ConseilPolicy
     {
         return $authUser->can('ForceDeleteAny:Conseil');
     }
-
     public function restoreAny(AuthUser $authUser): bool
     {
         return $authUser->can('RestoreAny:Conseil');
@@ -71,5 +70,4 @@ class ConseilPolicy
     {
         return $authUser->can('Reorder:Conseil');
     }
-
 }

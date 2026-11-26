@@ -82,14 +82,41 @@ class MembresForm
                                 ->required(),
 
                             TextInput::make('Telephone')
-                                ->tel()
+                                ->label('Téléphone')
                                 ->mask('99 999 99 99')
-                                ->placeholder('77 000 00 00')
-                                ->regex('/^(70|75|76|77|78|33)\s?\d{3}\s?\d{2}\s?\d{2}$/')
-                                ->validationMessages([
-                                    'regex' => 'Le format du numéro de téléphone est invalide.',
+                                ->required()
+                                ->unique(table: 'membres', column: 'Telephone', ignoreRecord: true)
+                                ->rules([
+                                    fn(): \Closure => function (string $attribute, $value, \Closure $fail) {
+                                        $nettoye = preg_replace('/\s+/', '', (string) $value);
+
+                                        $estDejaPF = \App\Models\Section::whereRaw("REPLACE(TEL_PF1, ' ', '') = ?", [$nettoye])
+                                            ->orWhereRaw("REPLACE(TEL_PF2, ' ', '') = ?", [$nettoye])
+                                            ->orWhereRaw("REPLACE(TEL_PF3, ' ', '') = ?", [$nettoye])
+                                            ->exists()
+                                            || \App\Models\Conseil::whereRaw("REPLACE(tel_pf1, ' ', '') = ?", [$nettoye])
+                                            ->orWhereRaw("REPLACE(tel_pf2, ' ', '') = ?", [$nettoye])
+                                            ->orWhereRaw("REPLACE(tel_pf3, ' ', '') = ?", [$nettoye])
+                                            ->exists();
+
+                                        if ($estDejaPF) {
+                                            $fail('Ce Point Focal / Utilisateur est déjà automatiquement enrôlé dans sa section.');
+                                        }
+                                    },
                                 ])
-                                ->placeholder('Numero Téléphone'),
+                                ->validationMessages([
+                                    'unique' => 'Ce membre est déjà enrôlé.',
+                                ]),
+
+                            // TextInput::make('Telephone')
+                            //     ->tel()
+                            //     ->mask('99 999 99 99')
+                            //     ->placeholder('77 000 00 00')
+                            //     ->regex('/^(70|75|76|77|78|33)\s?\d{3}\s?\d{2}\s?\d{2}$/')
+                            //     ->validationMessages([
+                            //         'regex' => 'Le format du numéro de téléphone est invalide.',
+                            //     ])
+                            //     ->placeholder('Numero Téléphone'),
 
                             TextInput::make('Adresse')
                                 ->placeholder('Adresse')
@@ -132,17 +159,18 @@ class MembresForm
                         ->schema([
                             Select::make('Conseil')
                                 ->options([
-                                    'oriental' => 'Oriental',
-                                    'koussanar' => 'Koussanar',
-                                    'boundou' => 'Boundou',
+                                    'ORIENTAL' => 'ORIENTAL',
+                                    'BOUNDOU' => 'BOUNDOU',
                                 ])
                                 ->searchable()
                                 ->placeholder('Conseil')
                                 ->required(),
 
-                            TextInput::make('Section')
-                                ->placeholder('Nom section')
-                                ->required(),
+                            Select::make('Section')
+                                ->label('Section')
+                                ->options(fn(): array => \App\Models\Section::query()->pluck('Nom', 'Nom')->toArray())
+                                ->searchable(),
+
 
                             TextInput::make('Parent')
                                 ->placeholder('Nom Complet')
@@ -202,6 +230,44 @@ class MembresForm
                                 })
                                 ->disabled(fn() => ! (Auth::user() && call_user_func([Auth::user(), 'hasRole'], 'super_admin')))
                                 ->dehydrated(),
+
+                            // Masquer les utilisateurs déjà enrôlés.
+                            Select::make('user_id')
+                                ->label('Utilisateur')
+                                ->relationship(
+                                    name: 'user',
+                                    titleAttribute: 'name',
+                                    modifyQueryUsing: fn($query) => $query->whereDoesntHave('membre')
+                                )
+                                ->unique(table: 'membres', column: 'user_id', ignoreRecord: true)
+                                ->validationMessages([
+                                    'unique' => 'Ce membre est déjà enrôlé dans sa section.',
+                                ]),
+
+                            // Bloquer les numéros déjà utilisés par un membre ou un PF.
+                            TextInput::make('telephone')
+                                ->label('Téléphone')
+                                ->mask('99 999 99 99')
+                                ->unique(table: 'membres', column: 'telephone', ignoreRecord: true)
+                                ->rules([
+                                    function (string $attribute, $value, \Closure $fail) {
+                                        $estDejaPF = \App\Models\Section::where('TEL_PF1', $value)
+                                            ->orWhere('TEL_PF2', $value)
+                                            ->orWhere('TEL_PF3', $value)
+                                            ->exists()
+                                            || \App\Models\Conseil::where('tel_pf1', $value)
+                                            ->orWhere('tel_pf2', $value)
+                                            ->orWhere('tel_pf3', $value)
+                                            ->exists();
+
+                                        if ($estDejaPF) {
+                                            $fail('Ce Point Focal est déjà automatiquement enrôlé dans sa section.');
+                                        }
+                                    },
+                                ])
+                                ->validationMessages([
+                                    'unique' => 'Ce numéro est déjà enrôlé dans une section.',
+                                ]),
 
                             TextInput::make('Cree_par')
                                 ->label('Créé par')

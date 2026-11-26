@@ -6,17 +6,17 @@ namespace App\Policies;
 
 use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\Section;
+use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class SectionPolicy
 {
     use HandlesAuthorization;
-    
+
     public function viewAny(AuthUser $authUser): bool
     {
         return $authUser->can('ViewAny:Section');
     }
-
     public function view(AuthUser $authUser, Section $section): bool
     {
         return $authUser->can('View:Section');
@@ -71,5 +71,4 @@ class SectionPolicy
     {
         return $authUser->can('Reorder:Section');
     }
-
 }

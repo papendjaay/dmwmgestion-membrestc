@@ -33,6 +33,11 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login(CustomLogin::class)
             ->spa()
+            ->maxContentWidth('full') // <-- Étend toutes les pages et formulaires sur toute la largeur
+            ->sidebarCollapsibleOnDesktop()   // <-- Permet d'ouvrir/fermer proprement la barre latérale
+            ->passwordReset()
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('30s')
             ->passwordReset() // <-- Permet aux utilisateurs Gmail de réinitialiser leur mot de passe
             ->databaseNotifications()
             ->passwordReset() // Permet aux Points Focaux de définir leur propre mot de passe par email
